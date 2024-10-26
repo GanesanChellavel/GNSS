@@ -1,0 +1,40 @@
+-------------------------V1_GPS_TIME_Receiver---------------------------------------
+
+#include <ESP8266WiFi.h>
+#include <espnow.h>
+
+// Structure to receive data (must match the transmitter structure)
+typedef struct struct_message {
+  String timeSGT;
+} struct_message;
+
+// Create a struct_message to hold received data
+struct_message receivedData;
+
+// Callback when data is received
+void OnDataReceive(uint8_t *mac, uint8_t *incomingData, uint8_t len) {
+  memcpy(&receivedData, incomingData, sizeof(receivedData));
+  Serial.print("Received Time (SGT): ");
+  Serial.println(receivedData.timeSGT);
+}
+
+void setup() {
+  // Initialize Serial Monitor
+  Serial.begin(115200);
+
+  // Set device as a Wi-Fi Station
+  WiFi.mode(WIFI_STA);
+  
+  // Initialize ESP-NOW
+  if (esp_now_init() != 0) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+
+  // Register callback for receiving data
+  esp_now_register_recv_cb(OnDataReceive);
+}
+
+void loop() {
+  // Nothing to do here - all handled in the callback
+}

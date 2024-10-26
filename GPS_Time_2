@@ -1,0 +1,35 @@
+#include <TinyGPS++.h>
+#include <SoftwareSerial.h>
+
+static const int RXPin = 5, TXPin = 4; // D1, D2 esp-8266
+static const uint32_t GPSBaud = 9600;
+
+// The TinyGPS++ object
+TinyGPSPlus gps;
+
+// The serial connection to the GPS device
+SoftwareSerial ss(RXPin, TXPin);
+
+void setup(){
+  Serial.begin(9600);
+  ss.begin(GPSBaud);
+}
+
+void loop(){
+  // This sketch displays time information every time a new sentence is correctly encoded.
+  while (ss.available() > 0){
+    gps.encode(ss.read());
+    if (gps.time.isUpdated()){
+      // Convert UTC hour to Singapore time (UTC+8)
+      int hourSGT = (gps.time.hour() + 8) % 24; // Adjust to 24-hour format if it exceeds 23
+
+      // Print time in Singapore timezone in HH:MM format
+      Serial.print("Time (SGT): ");
+      if (hourSGT < 10) Serial.print("0"); // Pad hour with 0 if needed
+      Serial.print(hourSGT);
+      Serial.print(":");
+      if (gps.time.minute() < 10) Serial.print("0"); // Pad minute with 0 if needed
+      Serial.println(gps.time.minute());
+    }
+  }
+}

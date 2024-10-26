@@ -1,0 +1,35 @@
+#include <TinyGPS++.h>
+#include <SoftwareSerial.h>
+TinyGPSPlus gps;
+SoftwareSerial mygps(5, 4); // GPS Tx Pin - D4  GPS Rx Pin D3
+
+void setup(){
+  Serial.begin(9600);
+  mygps.begin(9600);
+}
+
+void loop(){
+  // This sketch displays Singapore time (hour and minute) every time a new sentence is correctly encoded.
+  while (mygps.available() > 0){
+    gps.encode(mygps.read());
+
+    // Check if the GPS time is valid and updated
+    if (gps.time.isValid()) {
+      int hour = gps.time.hour();       // UTC hour
+      int minute = gps.time.minute();   // UTC minute
+
+      // Adjust time to UTC+8 for Singapore
+      hour += 8;
+      if (hour >= 24) hour -= 24;  // Adjust hour to wrap around if it goes over 24
+
+      Serial.print("Singapore Time: ");
+      if (hour < 10) Serial.print("0"); // Format hour with leading zero
+      Serial.print(hour);
+      Serial.print(":");
+      if (minute < 10) Serial.print("0"); // Format minute with leading zero
+      Serial.println(minute);
+    } else {
+      Serial.println("Waiting for valid GPS time...");
+    }
+  }
+}
